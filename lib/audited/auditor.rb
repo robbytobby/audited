@@ -176,7 +176,9 @@ module Audited
 
       def audited_changes
         changed_attributes.except(*non_audited_columns).inject({}) do |changes,(attr, old_value)|
-          changes[attr] = [old_value, self[attr]]
+	  type = self.class.columns_hash[attr.to_s].type
+	  scale = self.class.columns_hash[attr.to_s].scale
+          changes[attr] = [old_value, self[attr]] unless type == :decimal && old_value.round(scale) == self[attr].round(scale)
           changes
         end
       end
